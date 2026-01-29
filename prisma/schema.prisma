@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String?   // Hashed password
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  recommendations Recommendation[]
+  
+  @@map("users")
+}
+
+model Location {
+  id          String   @id @default(cuid())
+  name        String
+  city        String
+  province    String
+  latitude    Float?
+  longitude   Float?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  recommendations Recommendation[]
+  
+  @@map("locations")
+  @@index([city])
+  @@index([province])
+}
+
+model Recommendation {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  category    String   // food, activity, hidden_gem, accommodation, transport
+  rating      Int      @default(5) // 1-5
+  priceRange  String?  // budget, moderate, expensive
+  imageUrl    String?
+  website     String?
+  address     String?
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  locationId  String
+  location    Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("recommendations")
+}
